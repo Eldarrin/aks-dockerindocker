@@ -1,0 +1,42 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: docker
+  labels:
+    app: docker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: docker
+  template:
+    metadata:
+      labels:
+        app: docker
+    spec:
+      containers:
+      - name: docker
+        image: "mydockeragent:latest"
+        imagePullPolicy: Always
+        envFrom:
+        - secretRef:
+            name: ado-pat-tokens
+        env:
+          - name: AZP_AGENT_NAME
+            value: docker-agent
+          - name: AZP_URL
+            valueFrom:
+              configMapKeyRef:
+                name: ado-config
+                key: azp.url
+          - name: AZP_POOL
+            valueFrom:
+              configMapKeyRef:
+                name: ado-config
+                key: pool.name
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: DOCKER_HOST
+            value: tcp://dind-swarm:2375
